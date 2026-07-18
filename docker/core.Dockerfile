@@ -50,6 +50,7 @@ RUN printf '%s\n' \
         openssh-client \
         unzip \
         sudo \
+        passwd \
         vim \
         nano \
         man-db \
