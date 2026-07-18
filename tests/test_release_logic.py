@@ -58,7 +58,7 @@ class ReleaseLogicTests(unittest.TestCase):
             payload = acme.student_devcontainer(self.config, target)
             self.assertEqual(
                 payload["image"],
-                f"ghcr.io/byu-acme/acme-{target}:2026.08.0",
+                f"ghcr.io/byu-acme-sandbox/acme-{target}:2026.08.0",
             )
             self.assertNotIn("containerName", payload)
             self.assertEqual(
@@ -72,7 +72,7 @@ class ReleaseLogicTests(unittest.TestCase):
         self.assertEqual(list(manifest["images"]), acme.ALL_ORDER)
         self.assertEqual(
             manifest["images"]["dev"]["base_core"],
-            "ghcr.io/byu-acme/acme-core:2026.08.0",
+            "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0",
         )
         json.dumps(manifest)
 
