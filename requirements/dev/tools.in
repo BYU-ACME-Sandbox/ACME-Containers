@@ -1,0 +1,3 @@
+# Developer/admin-only Python utilities.
+
+tabulate>=0.10.0,<1

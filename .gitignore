@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+.tmp/
+*.log
+
+README.md
+SECURITY.md
+docs/

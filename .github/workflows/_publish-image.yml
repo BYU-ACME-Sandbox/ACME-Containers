@@ -1,0 +1,158 @@
+name: Publish one image
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: Image target from config/images.json
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build ${{ inputs.target }} (${{ matrix.lock_arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lock_arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - lock_arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Free runner disk space
+        shell: bash
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+            /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
+          sudo apt-get clean
+          docker system prune --all --force --volumes || true
+          echo 'Disk usage after cleanup:'
+          df -h
+          docker system df || true
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Read image metadata
+        id: meta
+        run: python scripts/acme.py metadata "${{ inputs.target }}" --github-output
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push architecture digest
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ steps.meta.outputs.dockerfile }}
+          platforms: ${{ matrix.platform }}
+          pull: true
+          outputs: type=image,name=${{ steps.meta.outputs.image }},push-by-digest=true,name-canonical=true,push=true
+          build-args: |
+            TARGET=${{ inputs.target }}
+            LOCK_ARCH=${{ matrix.lock_arch }}
+            IMAGE_VERSION=${{ steps.meta.outputs.version }}
+            PYTHON_VERSION=${{ steps.meta.outputs.python_version }}
+            PYTHON_IMAGE_VARIANT=${{ steps.meta.outputs.python_image_variant }}
+            UV_VERSION=${{ steps.meta.outputs.uv_version }}
+            SVGO_VERSION=${{ steps.meta.outputs.svgo_version }}
+            CORE_IMAGE=${{ steps.meta.outputs.core_image }}
+            CORE_VERSION=${{ steps.meta.outputs.core_version }}
+            SOURCE_URL=${{ steps.meta.outputs.source_url }}
+          cache-from: type=gha,scope=${{ inputs.target }}-${{ matrix.lock_arch }}
+          cache-to: type=gha,mode=min,ignore-error=true,timeout=5m,scope=${{ inputs.target }}-${{ matrix.lock_arch }}
+          provenance: false
+          sbom: false
+
+      - name: Report disk usage after build
+        if: always()
+        shell: bash
+        run: |
+          df -h || true
+          docker system df || true
+
+      - name: Smoke-test native architecture image
+        shell: bash
+        run: |
+          reference='${{ steps.meta.outputs.image }}@${{ steps.build.outputs.digest }}'
+          docker pull "$reference"
+          docker run --rm --platform '${{ matrix.platform }}' "$reference" \
+            python /opt/acme/scripts/smoke_test.py --target '${{ inputs.target }}'
+
+      - name: Record architecture digest
+        shell: bash
+        run: |
+          mkdir -p digests
+          printf '%s\n' '${{ steps.build.outputs.digest }}' > 'digests/${{ matrix.lock_arch }}.txt'
+
+      - name: Upload architecture digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digest-${{ inputs.target }}-${{ matrix.lock_arch }}
+          path: digests/${{ matrix.lock_arch }}.txt
+          if-no-files-found: error
+          retention-days: 2
+
+  manifest:
+    name: Publish ${{ inputs.target }} manifest
+    runs-on: ubuntu-24.04
+    needs: build
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Read image metadata
+        id: meta
+        run: python scripts/acme.py metadata "${{ inputs.target }}" --github-output
+
+      - name: Download architecture digests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: digest-${{ inputs.target }}-*
+          path: digests
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-platform manifest
+        shell: bash
+        run: |
+          image='${{ steps.meta.outputs.image }}'
+          sources=()
+          for file in digests/amd64.txt digests/arm64.txt; do
+            sources+=("$image@$(cat "$file")")
+          done
+          docker buildx imagetools create \
+            --tag "$image:${{ steps.meta.outputs.version }}" \
+            --tag "$image:sha-${{ github.sha }}" \
+            --tag "$image:latest" \
+            "${sources[@]}"
+
+      - name: Inspect published manifest
+        run: docker buildx imagetools inspect '${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}'

@@ -1,0 +1,64 @@
+{
+  "name": "ACME Volume 1A (Python 3.13)",
+  "image": "ghcr.io/byu-acme-sandbox/acme-vol1a:2026.08.0",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "containerUser": "vscode",
+  "postCreateCommand": "python -m ipykernel install --user --name acme --display-name \"ACME Python\" && (test -f .utils/install_completions.sh && bash .utils/install_completions.sh </dev/null || true)",
+  "postStartCommand": "git config --global --add safe.directory '*' || true; (test -f .utils/install_completions.sh && bash .utils/install_completions.sh </dev/null || true)",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "files.eol": "\n",
+        "files.exclude": {
+          "**/.*": true,
+          "**/.devcontainer": true,
+          "**/.vscode": true,
+          "**/.git": true,
+          "**/.github": true,
+          "**/.gitignore": true,
+          "**/requirements.txt": true,
+          "**/*.md": true,
+          "**/*.tex": true,
+          "**/content": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/validate_driver.txt": true,
+          "**/.utils": true
+        },
+        "github.copilot.enable": false,
+        "github.copilot-chat.enable": false,
+        "extensions.ignoreRecommendations": true,
+        "extensions.unwantedRecommendations": [
+          "GitHub.copilot",
+          "GitHub.copilot-chat"
+        ],
+        "extensions.autoUpdate": false,
+        "extensions.autoCheckUpdates": false,
+        "update.mode": "none",
+        "python.defaultInterpreterPath": "/opt/acme-venv/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "jupyter.jupyterServerType": "local",
+        "jupyter.defaultKernel": "ACME Python"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "VIRTUAL_ENV": "/opt/acme-venv",
+    "PATH": "/opt/acme-venv/bin:/usr/local/bin:/usr/bin:/bin"
+  }
+}

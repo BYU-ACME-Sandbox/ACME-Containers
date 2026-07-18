@@ -1,0 +1,75 @@
+name: Publish images
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: auto, all, core, dev, or comma-separated course targets
+        required: true
+        default: auto
+        type: string
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  plan:
+    name: Plan image builds
+    runs-on: ubuntu-24.04
+    outputs:
+      targets: ${{ steps.plan.outputs.targets }}
+      build_core: ${{ steps.plan.outputs.build_core }}
+      downstream: ${{ steps.plan.outputs.downstream }}
+      has_downstream: ${{ steps.plan.outputs.has_downstream }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Compute changed targets
+        id: plan
+        shell: bash
+        env:
+          BEFORE: ${{ github.event.before }}
+          REQUESTED: ${{ github.event_name == 'workflow_dispatch' && inputs.targets || 'auto' }}
+        run: |
+          python scripts/acme.py ci-plan \
+            --before "$BEFORE" \
+            --after '${{ github.sha }}' \
+            --requested "$REQUESTED"
+
+  build-core:
+    name: Build shared core
+    needs: plan
+    if: needs.plan.outputs.build_core == 'true'
+    uses: ./.github/workflows/_publish-image.yml
+    with:
+      target: core
+    secrets: inherit
+
+  build-downstream:
+    name: Build ${{ matrix.target }}
+    needs: [plan, build-core]
+    if: >-
+      always() &&
+      needs.plan.result == 'success' &&
+      needs.plan.outputs.has_downstream == 'true' &&
+      (needs.build-core.result == 'success' || needs.build-core.result == 'skipped')
+    strategy:
+      fail-fast: false
+      # Four image targets means at most eight architecture builds at once.
+      # This reduces registry/cache pressure while every build still gets its own runner.
+      max-parallel: 4
+      matrix:
+        target: ${{ fromJSON(needs.plan.outputs.downstream) }}
+    uses: ./.github/workflows/_publish-image.yml
+    with:
+      target: ${{ matrix.target }}
+    secrets: inherit

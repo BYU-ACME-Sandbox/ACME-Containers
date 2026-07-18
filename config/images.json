@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "organization": "BYU-ACME-Sandbox",
+  "source_repository": "BYU-ACME-Sandbox/ACME-Containers",
+  "registry": "ghcr.io/byu-acme-sandbox",
+  "python_version": "3.13.14",
+  "python_image_variant": "slim-bookworm",
+  "uv_version": "0.11.29",
+  "svgo_version": "4.0.2",
+  "release_month": "2026.08",
+  "publishing_enabled": false,
+  "images": {
+    "core": {
+      "kind": "core",
+      "repository": "acme-core",
+      "version": "2026.08.0",
+      "display_name": "ACME Core"
+    },
+    "vol1a": {
+      "kind": "course",
+      "repository": "acme-vol1a",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 1A",
+      "requirements": "requirements/courses/vol1a.in",
+      "smoke_imports": [
+        "imageio"
+      ]
+    },
+    "vol1b": {
+      "kind": "course",
+      "repository": "acme-vol1b",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 1B",
+      "requirements": "requirements/courses/vol1b.in",
+      "smoke_imports": [
+        "binaryornot",
+        "jax",
+        "networkx",
+        "numba",
+        "sympy"
+      ]
+    },
+    "vol2a": {
+      "kind": "course",
+      "repository": "acme-vol2a",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 2A",
+      "requirements": "requirements/courses/vol2a.in",
+      "smoke_imports": [
+        "arviz",
+        "imageio",
+        "networkx",
+        "pymc"
+      ]
+    },
+    "vol2b": {
+      "kind": "course",
+      "repository": "acme-vol2b",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 2B",
+      "requirements": "requirements/courses/vol2b.in",
+      "smoke_imports": [
+        "bitstring",
+        "cvxpy",
+        "gymnasium",
+        "imageio",
+        "pooch",
+        "pywt",
+        "sklearn"
+      ]
+    },
+    "vol3a": {
+      "kind": "course",
+      "repository": "acme-vol3a",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 3A",
+      "requirements": "requirements/courses/vol3a.in",
+      "smoke_imports": [
+        "colorama",
+        "geopandas",
+        "graphviz",
+        "imageio",
+        "ipyparallel",
+        "lxml",
+        "pydataset",
+        "sklearn",
+        "shapely",
+        "statsmodels"
+      ]
+    },
+    "vol3b": {
+      "kind": "course",
+      "repository": "acme-vol3b",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 3B",
+      "requirements": "requirements/courses/vol3b.in",
+      "smoke_imports": [
+        "hmmlearn",
+        "sklearn",
+        "seaborn",
+        "statsmodels"
+      ]
+    },
+    "vol4a": {
+      "kind": "course",
+      "repository": "acme-vol4a",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 4A",
+      "requirements": "requirements/courses/vol4a.in",
+      "smoke_imports": [
+        "sympy"
+      ]
+    },
+    "vol4b": {
+      "kind": "course",
+      "repository": "acme-vol4b",
+      "version": "2026.08.0",
+      "display_name": "ACME Volume 4B",
+      "requirements": "requirements/courses/vol4b.in",
+      "smoke_imports": [
+        "imageio",
+        "jax"
+      ]
+    },
+    "dev": {
+      "kind": "dev",
+      "repository": "acme-dev",
+      "version": "2026.08.0",
+      "display_name": "ACME Lab Development",
+      "smoke_imports": [
+        "sphinx",
+        "myst_parser",
+        "lxml",
+        "tabulate"
+      ]
+    }
+  }
+}

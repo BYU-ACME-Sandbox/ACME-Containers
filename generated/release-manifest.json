@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "source_repository": "BYU-ACME-Sandbox/ACME-Containers",
+  "python_version": "3.13.14",
+  "python_image_variant": "slim-bookworm",
+  "uv_version": "0.11.29",
+  "release_month": "2026.08",
+  "images": {
+    "core": {
+      "kind": "core",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-core",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0",
+      "display_name": "ACME Core"
+    },
+    "vol1a": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol1a",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol1a:2026.08.0",
+      "display_name": "ACME Volume 1A",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol1b": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol1b",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol1b:2026.08.0",
+      "display_name": "ACME Volume 1B",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol2a": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol2a",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol2a:2026.08.0",
+      "display_name": "ACME Volume 2A",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol2b": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol2b",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol2b:2026.08.0",
+      "display_name": "ACME Volume 2B",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol3a": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol3a",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol3a:2026.08.0",
+      "display_name": "ACME Volume 3A",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol3b": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol3b",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol3b:2026.08.0",
+      "display_name": "ACME Volume 3B",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol4a": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol4a",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol4a:2026.08.0",
+      "display_name": "ACME Volume 4A",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "vol4b": {
+      "kind": "course",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-vol4b",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-vol4b:2026.08.0",
+      "display_name": "ACME Volume 4B",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    },
+    "dev": {
+      "kind": "dev",
+      "repository": "ghcr.io/byu-acme-sandbox/acme-dev",
+      "version": "2026.08.0",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.0",
+      "display_name": "ACME Lab Development",
+      "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0"
+    }
+  }
+}

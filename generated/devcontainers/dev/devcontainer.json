@@ -1,0 +1,41 @@
+{
+  "name": "ACME Lab Development (Python 3.13)",
+  "image": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.0",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "containerUser": "vscode",
+  "postCreateCommand": "echo 'Container created. Configure GitHub credentials, then run: ./.setup_tools (or ./.setup_tools --czar)'",
+  "postStartCommand": "git config --global --add safe.directory '*' || true",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "files.eol": "\n",
+        "python.defaultInterpreterPath": "/opt/acme-venv/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "jupyter.jupyterServerType": "local",
+        "jupyter.defaultKernel": "ACME Dev Python",
+        "extensions.autoUpdate": false,
+        "extensions.autoCheckUpdates": false,
+        "update.mode": "none"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "VIRTUAL_ENV": "/opt/acme-venv",
+    "PATH": "/opt/acme-venv/bin:/usr/local/bin:/usr/bin:/bin"
+  }
+}
