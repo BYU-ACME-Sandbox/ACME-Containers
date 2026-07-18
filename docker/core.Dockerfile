@@ -19,7 +19,7 @@ ENV TZ=America/Denver \
     VIRTUAL_ENV=/opt/acme-venv \
     UV_PROJECT_ENVIRONMENT=/opt/acme-venv \
     UV_NO_CACHE=1 \
-    PATH="/opt/acme-venv/bin:/usr/local/bin:/usr/bin:/bin" \
+    PATH="/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
     MPLBACKEND=Agg \
     DEBIAN_FRONTEND=noninteractive
 
@@ -90,13 +90,13 @@ RUN git config --system core.askPass true \
  && git config --system --add safe.directory '*'
 
 ########################  NON-ROOT USER  ######################
-RUN useradd -m -s /bin/bash vscode \
+RUN /usr/sbin/useradd -m -s /bin/bash vscode \
  && echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode \
  && chmod 0440 /etc/sudoers.d/vscode \
  && chown -R vscode:vscode "$VIRTUAL_ENV" /opt/acme \
  && printf '%s\n' \
       'export VIRTUAL_ENV=/opt/acme-venv' \
-      'export PATH=/opt/acme-venv/bin:/usr/local/bin:/usr/bin:/bin' \
+      'export PATH=/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
       > /etc/profile.d/acme-venv.sh
 
 USER vscode

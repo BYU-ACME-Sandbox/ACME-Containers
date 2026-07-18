@@ -36,6 +36,6 @@
   },
   "remoteEnv": {
     "VIRTUAL_ENV": "/opt/acme-venv",
-    "PATH": "/opt/acme-venv/bin:/usr/local/bin:/usr/bin:/bin"
+    "PATH": "/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   }
 }
