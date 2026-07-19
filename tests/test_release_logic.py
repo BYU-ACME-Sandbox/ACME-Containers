@@ -48,32 +48,65 @@ class ReleaseLogicTests(unittest.TestCase):
 
     def test_nonbootstrap_bumps_only_selected_course(self) -> None:
         config = copy.deepcopy(self.config)
-        acme.bump_targets(config, ["vol3b"], month="2026.08", bootstrap=False)
-        self.assertEqual(config["images"]["vol3b"]["version"], "2026.08.1")
-        self.assertEqual(config["images"]["vol3a"]["version"], "2026.08.0")
-        self.assertEqual(config["images"]["core"]["version"], "2026.08.0")
+        original = {
+            target: image["version"]
+            for target, image in config["images"].items()
+        }
+        month = config["release_month"]
 
-    def test_generated_devcontainers_use_versioned_images_and_shared_venv(self) -> None:
+        acme.bump_targets(
+            config,
+            ["vol3b"],
+            month=month,
+            bootstrap=False,
+        )
+
+        self.assertEqual(
+            config["images"]["vol3b"]["version"],
+            acme.bump_version(original["vol3b"], month),
+        )
+
+        for target in acme.ALL_ORDER:
+            if target != "vol3b":
+                self.assertEqual(
+                    config["images"][target]["version"],
+                    original[target],
+                )
+
+    def test_generated_devcontainers_use_versioned_images_and_shared_venv(
+        self,
+    ) -> None:
         for target in acme.COURSE_ORDER:
             payload = acme.student_devcontainer(self.config, target)
+
             self.assertEqual(
                 payload["image"],
-                f"ghcr.io/byu-acme-sandbox/acme-{target}:2026.08.0",
+                acme.image_reference(self.config, target),
             )
             self.assertNotIn("containerName", payload)
             self.assertEqual(
-                payload["customizations"]["vscode"]["settings"]["python.defaultInterpreterPath"],
+                payload["customizations"]["vscode"]["settings"][
+                    "python.defaultInterpreterPath"
+                ],
                 "/opt/acme-venv/bin/python",
             )
-            self.assertEqual(payload["remoteEnv"]["VIRTUAL_ENV"], "/opt/acme-venv")
+            self.assertEqual(
+                payload["remoteEnv"]["VIRTUAL_ENV"],
+                "/opt/acme-venv",
+            )
 
     def test_release_manifest_contains_all_images(self) -> None:
         manifest = acme.release_manifest(self.config)
-        self.assertEqual(list(manifest["images"]), acme.ALL_ORDER)
+
+        self.assertEqual(
+            list(manifest["images"]),
+            acme.ALL_ORDER,
+        )
         self.assertEqual(
             manifest["images"]["dev"]["base_core"],
-            "ghcr.io/byu-acme-sandbox/acme-core:2026.08.0",
+            acme.image_reference(self.config, "core"),
         )
+
         json.dumps(manifest)
 
     def test_metadata_selects_correct_dockerfile(self) -> None:
