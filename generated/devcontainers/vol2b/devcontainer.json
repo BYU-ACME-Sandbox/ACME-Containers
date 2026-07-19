@@ -1,6 +1,6 @@
 {
   "name": "ACME Volume 2B (Python 3.13)",
-  "image": "ghcr.io/byu-acme-sandbox/acme-vol2b:2026.08.0",
+  "image": "ghcr.io/byu-acme-sandbox/acme-vol2b:2026.08.1",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "containerUser": "vscode",
   "postCreateCommand": "python -m ipykernel install --user --name acme --display-name \"ACME Python\" && (test -f .utils/install_completions.sh && bash .utils/install_completions.sh </dev/null || true)",
