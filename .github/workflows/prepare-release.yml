@@ -53,6 +53,10 @@ jobs:
         with:
           version: ${{ steps.config.outputs.uv_version }}
           enable-cache: true
+          cache-dependency-glob: |
+            requirements/**/*.in
+            requirements/locks/**/*.txt
+            config/images.json
 
       - name: Compile architecture locks
         shell: bash
