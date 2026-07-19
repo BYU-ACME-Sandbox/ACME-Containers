@@ -20,7 +20,6 @@ ENV TZ=America/Denver \
     UV_PROJECT_ENVIRONMENT=/opt/acme-venv \
     UV_NO_CACHE=1 \
     PATH="/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-    MPLBACKEND=Agg \
     DEBIAN_FRONTEND=noninteractive
 
 LABEL org.opencontainers.image.source="$SOURCE_URL" \
