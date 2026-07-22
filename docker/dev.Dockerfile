@@ -37,10 +37,12 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /root/.npm /tmp/* /var/tmp/*
 
 #####################  DEV PYTHON PACKAGES  ###################
-COPY requirements/locks/dev/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
-COPY requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
-COPY config/images.json /opt/acme/config/images.json
-COPY scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+COPY --chown=vscode:vscode requirements/locks/dev/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
+COPY --chown=vscode:vscode requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
+COPY --chown=vscode:vscode config/images.json /opt/acme/config/images.json
+COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+
+USER vscode
 
 RUN uv pip sync \
         --python "$VIRTUAL_ENV/bin/python" \
@@ -50,9 +52,7 @@ RUN uv pip sync \
  && "$VIRTUAL_ENV/bin/python" /opt/acme/scripts/verify_core_versions.py \
  && printf '{"target":"dev","version":"%s","lock_arch":"%s"}\n' \
         "$IMAGE_VERSION" "$LOCK_ARCH" > /opt/acme/image-info.json \
- && chown -R vscode:vscode "$VIRTUAL_ENV" /opt/acme \
- && rm -rf /root/.cache /tmp/* /var/tmp/*
+ && rm -rf "$HOME/.cache" /tmp/* /var/tmp/*
 
-USER vscode
 WORKDIR /workspaces
 CMD ["bash"]

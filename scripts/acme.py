@@ -274,15 +274,6 @@ def student_devcontainer(config: dict[str, Any], target: str) -> dict[str, Any]:
                 "ms-azuretools.vscode-docker",
             ],
         }},
-            "remoteEnv": {
-            "VIRTUAL_ENV": "/opt/acme-venv",
-            "PATH": (
-                "/opt/acme-venv/bin:"
-                "/usr/local/sbin:/usr/local/bin:"
-                "/usr/sbin:/usr/bin:"
-                "/sbin:/bin"
-            ),
-        },
     }
 
 
@@ -317,15 +308,7 @@ def dev_devcontainer(config: dict[str, Any]) -> dict[str, Any]:
                 "ms-toolsai.jupyter-keymap", "ms-toolsai.jupyter-renderers",
                 "ms-azuretools.vscode-docker",
             ],
-        }}, "remoteEnv": {
-            "VIRTUAL_ENV": "/opt/acme-venv",
-            "PATH": (
-                "/opt/acme-venv/bin:"
-                "/usr/local/sbin:/usr/local/bin:"
-                "/usr/sbin:/usr/bin:"
-                "/sbin:/bin"
-            ),
-        },
+        }},
     }
 
 

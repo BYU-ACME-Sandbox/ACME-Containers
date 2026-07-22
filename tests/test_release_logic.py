@@ -90,10 +90,7 @@ class ReleaseLogicTests(unittest.TestCase):
                 ],
                 "/opt/acme-venv/bin/python",
             )
-            self.assertEqual(
-                payload["remoteEnv"]["VIRTUAL_ENV"],
-                "/opt/acme-venv",
-            )
+            self.assertNotIn("remoteEnv", payload)
 
     def test_release_manifest_contains_all_images(self) -> None:
         manifest = acme.release_manifest(self.config)

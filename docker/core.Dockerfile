@@ -17,10 +17,11 @@ ARG SOURCE_URL
 ########################  ENVIRONMENT  ########################
 ENV TZ=America/Denver \
     VIRTUAL_ENV=/opt/acme-venv \
-    UV_PROJECT_ENVIRONMENT=/opt/acme-venv \
     UV_NO_CACHE=1 \
-    PATH="/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
     DEBIAN_FRONTEND=noninteractive
+
+# Preserve the base image/runtime PATH and only place the shared venv first.
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 LABEL org.opencontainers.image.source="$SOURCE_URL" \
       org.opencontainers.image.title="ACME Core" \
@@ -52,9 +53,7 @@ RUN printf '%s\n' \
         passwd \
         vim \
         nano \
-        man-db \
         less \
-        groff-base \
         procps \
         graphviz \
         fontconfig \
@@ -64,26 +63,9 @@ RUN printf '%s\n' \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/*
 
-########################  UV + PYTHON ENV  ####################
+########################  UV + GIT  ###########################
 COPY --from=uv /uv /uvx /usr/local/bin/
-RUN uv venv --python "/usr/local/bin/python" "$VIRTUAL_ENV"
 
-COPY requirements/locks/core/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
-COPY requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
-COPY config/images.json /opt/acme/config/images.json
-COPY scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
-
-RUN uv pip sync \
-        --python "$VIRTUAL_ENV/bin/python" \
-        --no-cache \
-        /opt/acme/locks/environment.txt \
- && uv pip check --python "$VIRTUAL_ENV/bin/python" \
- && "$VIRTUAL_ENV/bin/python" /opt/acme/scripts/verify_core_versions.py \
- && printf '{"target":"core","version":"%s","lock_arch":"%s"}\n' \
-        "$IMAGE_VERSION" "$LOCK_ARCH" > /opt/acme/image-info.json \
- && rm -rf /root/.cache /tmp/* /var/tmp/*
-
-########################  CONFIGURE GIT  ######################
 RUN git config --system core.askPass true \
  && git config --system credential.helper cache \
  && git config --system --add safe.directory '*'
@@ -92,12 +74,39 @@ RUN git config --system core.askPass true \
 RUN /usr/sbin/useradd -m -s /bin/bash vscode \
  && echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode \
  && chmod 0440 /etc/sudoers.d/vscode \
- && chown -R vscode:vscode "$VIRTUAL_ENV" /opt/acme \
+ && install -d -o vscode -g vscode \
+        "$VIRTUAL_ENV" \
+        /opt/acme \
+        /opt/acme/locks \
+        /opt/acme/constraints \
+        /opt/acme/config \
+        /opt/acme/scripts \
  && printf '%s\n' \
       'export VIRTUAL_ENV=/opt/acme-venv' \
-      'export PATH=/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+      'case ":$PATH:" in' \
+      '  *":$VIRTUAL_ENV/bin:"*) ;;' \
+      '  *) export PATH="$VIRTUAL_ENV/bin:$PATH" ;;' \
+      'esac' \
       > /etc/profile.d/acme-venv.sh
 
+########################  PYTHON ENVIRONMENT  #################
+COPY --chown=vscode:vscode requirements/locks/core/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
+COPY --chown=vscode:vscode requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
+COPY --chown=vscode:vscode config/images.json /opt/acme/config/images.json
+COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+
 USER vscode
+
+RUN uv venv --python "/usr/local/bin/python" "$VIRTUAL_ENV" \
+ && uv pip sync \
+        --python "$VIRTUAL_ENV/bin/python" \
+        --no-cache \
+        /opt/acme/locks/environment.txt \
+ && uv pip check --python "$VIRTUAL_ENV/bin/python" \
+ && "$VIRTUAL_ENV/bin/python" /opt/acme/scripts/verify_core_versions.py \
+ && printf '{"target":"core","version":"%s","lock_arch":"%s"}\n' \
+        "$IMAGE_VERSION" "$LOCK_ARCH" > /opt/acme/image-info.json \
+ && rm -rf "$HOME/.cache" /tmp/* /var/tmp/*
+
 WORKDIR /workspaces
 CMD ["bash"]
