@@ -33,9 +33,5 @@
         "ms-azuretools.vscode-docker"
       ]
     }
-  },
-  "remoteEnv": {
-    "VIRTUAL_ENV": "/opt/acme-venv",
-    "PATH": "/opt/acme-venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   }
 }
