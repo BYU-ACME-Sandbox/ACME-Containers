@@ -80,8 +80,8 @@
     "dev": {
       "kind": "dev",
       "repository": "ghcr.io/byu-acme-sandbox/acme-dev",
-      "version": "2026.08.1",
-      "reference": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.1",
+      "version": "2026.08.2",
+      "reference": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.2",
       "display_name": "ACME Lab Development",
       "base_core": "ghcr.io/byu-acme-sandbox/acme-core:2026.08.1"
     }

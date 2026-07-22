@@ -1,6 +1,6 @@
 {
   "name": "ACME Lab Development (Python 3.13)",
-  "image": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.1",
+  "image": "ghcr.io/byu-acme-sandbox/acme-dev:2026.08.2",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "containerUser": "vscode",
   "postCreateCommand": "echo 'Container created. Configure GitHub credentials, then run: ./.setup_tools (or ./.setup_tools --czar)'",
