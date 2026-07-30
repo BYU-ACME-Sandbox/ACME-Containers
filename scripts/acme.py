@@ -228,7 +228,7 @@ def image_reference(config: dict[str, Any], target: str) -> str:
 def student_devcontainer(config: dict[str, Any], target: str) -> dict[str, Any]:
     image = config["images"][target]
     return {
-        "name": f"{image['display_name']} (Python 3.13)",
+        "name": f"{image['display_name']}",
         "image": image_reference(config, target),
         "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
         "containerUser": "vscode",
@@ -279,7 +279,7 @@ def student_devcontainer(config: dict[str, Any], target: str) -> dict[str, Any]:
 
 def dev_devcontainer(config: dict[str, Any]) -> dict[str, Any]:
     return {
-        "name": "ACME Lab Development (Python 3.13)",
+        "name": "ACME Lab Development",
         "image": image_reference(config, "dev"),
         "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
         "containerUser": "vscode",

@@ -1,5 +1,5 @@
 {
-  "name": "ACME Volume 2B (Python 3.13)",
+  "name": "ACME Volume 2B",
   "image": "ghcr.io/byu-acme-sandbox/acme-vol2b:2026.08.1",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "containerUser": "vscode",
