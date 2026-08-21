@@ -9,4 +9,4 @@ README.md
 SECURITY.md
 usage.md
 # Separate public output repository (BYU-ACME-Sandbox/uv-locks)
-generated/manual-environments/
+uv-locks/
