@@ -1,0 +1,153 @@
+name: Prepare manual locks
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: all, core, dev, or comma-separated course targets
+        required: true
+        default: all
+        type: string
+      upgrade:
+        description: Allow macOS transitive packages to upgrade within declared bounds
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: prepare-manual-locks
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate and verify ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-amd64
+            runner: ubuntu-24.04
+          - platform: linux-arm64
+            runner: ubuntu-24.04-arm
+          - platform: macos-arm64
+            runner: macos-15
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read tool versions
+        id: config
+        shell: bash
+        run: |
+          echo "uv_version=$(python3 -c 'import json; print(json.load(open("config/images.json"))["uv_version"])')" >> "$GITHUB_OUTPUT"
+          echo "python_version=$(python3 -c 'import json; print(json.load(open("config/images.json"))["python_version"])')" >> "$GITHUB_OUTPUT"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: ${{ steps.config.outputs.uv_version }}
+          enable-cache: true
+          cache-dependency-glob: |
+            requirements/**/*.in
+            requirements/locks/**/*.txt
+            generated/manual-environments/**/*.txt
+            config/images.json
+
+      - name: Install exact Python
+        shell: bash
+        run: uv python install '${{ steps.config.outputs.python_version }}'
+
+      - name: Generate platform locks
+        shell: bash
+        env:
+          TARGETS: ${{ inputs.targets }}
+          UPGRADE: ${{ inputs.upgrade }}
+        run: |
+          args=(generate "$TARGETS" --platform '${{ matrix.platform }}')
+          if [[ "$UPGRADE" == 'true' ]]; then
+            args+=(--upgrade)
+          fi
+          ./manual-locks "${args[@]}"
+
+      - name: Verify native installation
+        shell: bash
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: ./manual-locks verify "$TARGETS" --platform '${{ matrix.platform }}'
+
+      - name: Package generated platform files
+        shell: bash
+        run: |
+          mkdir -p staged
+          while IFS= read -r -d '' file; do
+            mkdir -p "staged/$(dirname "$file")"
+            cp "$file" "staged/$file"
+          done < <(find generated/manual-environments -type f \
+            \( -name '${{ matrix.platform }}.txt' -o -name 'metadata.json' \) -print0)
+          tar -C staged -czf 'manual-${{ matrix.platform }}.tar.gz' generated/manual-environments
+
+      - name: Upload generated platform files
+        uses: actions/upload-artifact@v7
+        with:
+          name: manual-${{ matrix.platform }}
+          path: manual-${{ matrix.platform }}.tar.gz
+          if-no-files-found: error
+          retention-days: 2
+
+  finalize:
+    name: Commit manual locks
+    runs-on: ubuntu-24.04
+    needs: generate
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download generated locks
+        uses: actions/download-artifact@v8
+        with:
+          pattern: manual-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Merge platform artifacts
+        shell: bash
+        run: |
+          for archive in artifacts/manual-*.tar.gz; do
+            tar -xzf "$archive" -C .
+          done
+
+          # Intel macOS is unsupported. Remove any stale lock that may have
+          # been produced by an older version of the manual-lock tooling.
+          find generated/manual-environments \
+            -type f -name 'macos-amd64.txt' -delete
+
+      - name: Validate merged manual locks
+        shell: bash
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: ./manual-locks validate "$TARGETS" --platform all
+
+      - name: Run repository tests
+        run: |
+          python3 -m compileall -q scripts tests
+          python3 -m unittest discover -s tests -v
+          ./acme-containers validate --allow-missing-locks
+
+      - name: Commit generated manual locks
+        shell: bash
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add generated/manual-environments
+          if git diff --cached --quiet; then
+            echo 'Manual locks are already current.'
+            exit 0
+          fi
+          git commit -m "Update manual environment locks: $TARGETS"
+          git push origin HEAD:main

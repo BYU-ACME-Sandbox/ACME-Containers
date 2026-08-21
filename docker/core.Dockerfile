@@ -48,6 +48,7 @@ RUN printf '%s\n' \
         ffmpeg \
         git \
         openssh-client \
+        zip \
         unzip \
         sudo \
         passwd \
