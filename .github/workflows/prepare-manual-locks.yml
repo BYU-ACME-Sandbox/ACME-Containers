@@ -18,8 +18,13 @@ concurrency:
   group: prepare-manual-locks
   cancel-in-progress: false
 
+# The public uv-locks repository is cloned read-only.  This workflow never
+# stores a cross-repository credential and never pushes outside this repo.
 permissions:
-  contents: write
+  contents: read
+
+env:
+  MANUAL_LOCKS_REPOSITORY: https://github.com/BYU-ACME-Sandbox/uv-locks.git
 
 jobs:
   generate:
@@ -39,6 +44,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Seed from public manual-lock repository
+        shell: bash
+        run: |
+          rm -rf generated/manual-environments
+          git clone --depth 1 "$MANUAL_LOCKS_REPOSITORY" generated/manual-environments
+
       - name: Read tool versions
         id: config
         shell: bash
@@ -54,7 +65,6 @@ jobs:
           cache-dependency-glob: |
             requirements/**/*.in
             requirements/locks/**/*.txt
-            generated/manual-environments/**/*.txt
             config/images.json
 
       - name: Install exact Python
@@ -99,12 +109,18 @@ jobs:
           retention-days: 2
 
   finalize:
-    name: Commit manual locks
+    name: Assemble manual-lock update
     runs-on: ubuntu-24.04
     needs: generate
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Check out public manual-lock repository
+        shell: bash
+        run: |
+          rm -rf generated/manual-environments
+          git clone --depth 1 "$MANUAL_LOCKS_REPOSITORY" generated/manual-environments
 
       - name: Download generated locks
         uses: actions/download-artifact@v8
@@ -125,6 +141,10 @@ jobs:
           find generated/manual-environments \
             -type f -name 'macos-amd64.txt' -delete
 
+          # Keep the public output repository clean on macOS workstations.
+          find generated/manual-environments -type f -name '.DS_Store' -delete
+          printf '.DS_Store\n' > generated/manual-environments/.gitignore
+
       - name: Validate merged manual locks
         shell: bash
         env:
@@ -137,17 +157,43 @@ jobs:
           python3 -m unittest discover -s tests -v
           ./acme-containers validate --allow-missing-locks
 
-      - name: Commit generated manual locks
+      - name: Create local publication files
         shell: bash
         env:
           TARGETS: ${{ inputs.targets }}
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add generated/manual-environments
-          if git diff --cached --quiet; then
-            echo 'Manual locks are already current.'
-            exit 0
-          fi
-          git commit -m "Update manual environment locks: $TARGETS"
-          git push origin HEAD:main
+          git -C generated/manual-environments add -A
+          git -C generated/manual-environments diff --cached --binary \
+            > "$GITHUB_WORKSPACE/manual-locks-update.patch"
+          git -C generated/manual-environments reset --quiet
+
+          tar --exclude='.git' \
+            -C generated/manual-environments \
+            -czf "$GITHUB_WORKSPACE/manual-environments.tar.gz" .
+
+          cat > "$GITHUB_WORKSPACE/PUBLISH-MANUAL-LOCKS.txt" <<EOF
+          The native manual-lock jobs passed for: $TARGETS
+
+          To publish this update from a local ACME-Containers checkout:
+
+            git -C generated/manual-environments pull --ff-only
+            git -C generated/manual-environments apply --check /path/to/manual-locks-update.patch
+            git -C generated/manual-environments apply /path/to/manual-locks-update.patch
+            git -C generated/manual-environments add -A
+            git -C generated/manual-environments commit -m "Update ACME manual environment locks"
+            git -C generated/manual-environments push origin main
+
+          The nested repository uses your normal local Git/GitHub authentication.
+          No cross-repository token is stored in ACME-Containers.
+          EOF
+
+      - name: Upload ready-to-publish manual locks
+        uses: actions/upload-artifact@v7
+        with:
+          name: manual-locks-ready-to-publish
+          path: |
+            manual-locks-update.patch
+            manual-environments.tar.gz
+            PUBLISH-MANUAL-LOCKS.txt
+          if-no-files-found: error
+          retention-days: 7

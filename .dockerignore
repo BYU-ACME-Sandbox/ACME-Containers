@@ -7,3 +7,6 @@ __pycache__
 docs
 tests
 README.md
+
+# Separate manual-lock output repository; never needed in image builds.
+generated/manual-environments

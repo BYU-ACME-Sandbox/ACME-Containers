@@ -81,6 +81,8 @@ RUN /usr/sbin/useradd -m -s /bin/bash vscode \
         /opt/acme/locks \
         /opt/acme/constraints \
         /opt/acme/config \
+        /opt/acme/requirements \
+        /opt/acme/requirements/dev \
         /opt/acme/scripts \
  && printf '%s\n' \
       'export VIRTUAL_ENV=/opt/acme-venv' \
@@ -94,7 +96,8 @@ RUN /usr/sbin/useradd -m -s /bin/bash vscode \
 COPY --chown=vscode:vscode requirements/locks/core/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
 COPY --chown=vscode:vscode requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
 COPY --chown=vscode:vscode config/images.json /opt/acme/config/images.json
-COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+COPY --chown=vscode:vscode requirements/core.in /opt/acme/requirements/core.in
+COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py scripts/smoke_requirements.py /opt/acme/scripts/
 
 USER vscode
 

@@ -15,7 +15,8 @@ LABEL org.opencontainers.image.source="$SOURCE_URL" \
 COPY --chown=vscode:vscode requirements/locks/courses/${TARGET}/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
 COPY --chown=vscode:vscode requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
 COPY --chown=vscode:vscode config/images.json /opt/acme/config/images.json
-COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+COPY --chown=vscode:vscode requirements/courses/${TARGET}.in /opt/acme/requirements/course.in
+COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py scripts/smoke_requirements.py /opt/acme/scripts/
 
 USER vscode
 

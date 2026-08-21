@@ -92,6 +92,11 @@ class ReleaseLogicTests(unittest.TestCase):
             )
             self.assertNotIn("remoteEnv", payload)
 
+
+    def test_smoke_imports_are_derived_from_requirement_inputs(self) -> None:
+        for target, image in self.config["images"].items():
+            self.assertNotIn("smoke_imports", image, target)
+
     def test_release_manifest_contains_all_images(self) -> None:
         manifest = acme.release_manifest(self.config)
 

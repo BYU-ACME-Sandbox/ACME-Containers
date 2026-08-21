@@ -30,7 +30,6 @@ if str(SCRIPT_DIR) not in sys.path:
 # repository root and when this file is executed directly.
 from acme import (  # type: ignore
     ALL_ORDER,
-    COURSE_ORDER,
     CORE_INPUT,
     ROOT,
     AcmeError,
@@ -69,7 +68,6 @@ PLATFORMS = {
     },
 }
 
-CORE_SMOKE_IMPORTS = ["numpy", "scipy", "matplotlib", "pandas", "cvxopt"]
 
 
 def manual_lock_path(target: str, platform_name: str) -> Path:
@@ -243,13 +241,6 @@ def host_matches(platform_name: str) -> bool:
     return system == expected["system"] and machine in expected["machine"]
 
 
-def smoke_imports(config: dict, target: str) -> list[str]:
-    imports = list(CORE_SMOKE_IMPORTS)
-    imports.extend(config["images"][target].get("smoke_imports", []))
-    # Preserve order while removing duplicates.
-    return list(dict.fromkeys(imports))
-
-
 def verify_native(targets: Iterable[str], platform_name: str) -> None:
     if not host_matches(platform_name):
         raise AcmeError(
@@ -274,10 +265,16 @@ def verify_native(targets: Iterable[str], platform_name: str) -> None:
             run(["uv", "pip", "sync", "--python", str(python), str(lock)])
             run(["uv", "pip", "check", "--python", str(python)])
 
-            imports = smoke_imports(config, target)
-            code = "\n".join(f"import {name}" for name in imports)
-            code += "\nprint('Smoke imports passed.')\n"
-            run([str(python), "-c", code])
+            requirement_sources = [
+                str(path.relative_to(ROOT)) for path in target_sources(config, target)
+            ]
+            run(
+                [
+                    str(python),
+                    str(ROOT / "scripts/smoke_requirements.py"),
+                    *requirement_sources,
+                ]
+            )
 
     print(f"Native installation verification passed for {platform_name}.")
 

@@ -40,7 +40,10 @@ RUN apt-get update \
 COPY --chown=vscode:vscode requirements/locks/dev/${LOCK_ARCH}.txt /opt/acme/locks/environment.txt
 COPY --chown=vscode:vscode requirements/locks/core/direct-${LOCK_ARCH}.txt /opt/acme/constraints/core-direct.txt
 COPY --chown=vscode:vscode config/images.json /opt/acme/config/images.json
-COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py /opt/acme/scripts/
+COPY --chown=vscode:vscode requirements/dev/labs.in /opt/acme/requirements/dev/labs.in
+COPY --chown=vscode:vscode requirements/dev/sphinx.in /opt/acme/requirements/dev/sphinx.in
+COPY --chown=vscode:vscode requirements/dev/tools.in /opt/acme/requirements/dev/tools.in
+COPY --chown=vscode:vscode scripts/verify_core_versions.py scripts/smoke_test.py scripts/smoke_requirements.py /opt/acme/scripts/
 
 USER vscode
 

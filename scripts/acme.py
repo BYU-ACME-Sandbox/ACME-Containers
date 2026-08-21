@@ -371,6 +371,10 @@ def validate(*, allow_missing_locks: bool = False) -> None:
     for target, image in config["images"].items():
         if not VERSION_RE.fullmatch(image.get("version", "")):
             errors.append(f"{target}: invalid version")
+        if "smoke_imports" in image:
+            errors.append(
+                f"{target}: smoke_imports is obsolete; smoke tests are derived from requirement .in files"
+            )
         if target in COURSE_ORDER and not (ROOT / image["requirements"]).exists():
             errors.append(f"{target}: missing requirements input")
 
@@ -407,7 +411,7 @@ def validate(*, allow_missing_locks: bool = False) -> None:
     if require_locks and not locks_exist:
         errors.append("Publishing enabled but core locks missing")
 
-    if locks_exist:
+    if locks_exist and not allow_missing_locks:
         core_names = direct_requirement_names(CORE_INPUT)
         arch_direct: dict[str, dict[str, str]] = {}
         for arch in ARCHES:
@@ -517,7 +521,7 @@ def plan_targets(before: str, after: str, requested: str) -> list[str]:
         new_image = config["images"][target]
         if old_image.get("version") != new_image["version"]:
             selected.add(target)
-        for key in ("repository", "kind", "requirements", "smoke_imports"):
+        for key in ("repository", "kind", "requirements"):
             if old_image.get(key) != new_image.get(key):
                 selected.add(target)
 

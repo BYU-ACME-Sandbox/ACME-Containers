@@ -7,5 +7,6 @@ __pycache__/
 
 README.md
 SECURITY.md
-docs/
+usage.md
+# Separate public output repository (BYU-ACME-Sandbox/uv-locks)
 generated/manual-environments/

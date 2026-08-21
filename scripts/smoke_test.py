@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import os
 import platform
@@ -13,8 +12,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+from smoke_requirements import smoke_requirement_files
+
 INFO_PATH = Path("/opt/acme/image-info.json")
 CONFIG_PATH = Path("/opt/acme/config/images.json")
+REQUIREMENTS_ROOT = Path("/opt/acme/requirements")
 
 
 def run(*command: str) -> None:
@@ -27,6 +29,21 @@ def expected_machine(lock_arch: str) -> set[str]:
         "amd64": {"x86_64", "amd64"},
         "arm64": {"aarch64", "arm64"},
     }[lock_arch]
+
+
+def requirement_sources(target: str) -> list[Path]:
+    sources = [REQUIREMENTS_ROOT / "core.in"]
+    if target == "dev":
+        sources.extend(
+            [
+                REQUIREMENTS_ROOT / "dev/labs.in",
+                REQUIREMENTS_ROOT / "dev/sphinx.in",
+                REQUIREMENTS_ROOT / "dev/tools.in",
+            ]
+        )
+    elif target != "core":
+        sources.append(REQUIREMENTS_ROOT / "course.in")
+    return sources
 
 
 def core_checks() -> None:
@@ -68,16 +85,6 @@ def core_checks() -> None:
     run(sys.executable, "-m", "nbqa", "--version")
 
 
-def jax_check() -> None:
-    import jax
-    import jax.numpy as jnp
-
-    result = jax.jit(lambda x: x @ x)(jnp.eye(3))
-    if result.shape != (3, 3):
-        raise RuntimeError("Unexpected JAX result")
-    print("JAX backend:", jax.default_backend())
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", help="Expected image target")
@@ -105,14 +112,7 @@ def main() -> int:
         raise RuntimeError("VIRTUAL_ENV is not /opt/acme-venv")
 
     core_checks()
-
-    imports = config["images"].get(target, {}).get("smoke_imports", [])
-    for module in imports:
-        print(f"Importing {module}...", flush=True)
-        importlib.import_module(module)
-
-    if target in {"vol1b", "vol4b", "dev"}:
-        jax_check()
+    smoke_requirement_files(requirement_sources(target))
 
     if target == "dev":
         for command in ("latexmk", "node", "svgo"):
