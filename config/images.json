@@ -13,69 +13,69 @@
     "core": {
       "kind": "core",
       "repository": "acme-core",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Core"
     },
     "vol1a": {
       "kind": "course",
       "repository": "acme-vol1a",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 1A",
       "requirements": "requirements/courses/vol1a.in"
     },
     "vol1b": {
       "kind": "course",
       "repository": "acme-vol1b",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 1B",
       "requirements": "requirements/courses/vol1b.in"
     },
     "vol2a": {
       "kind": "course",
       "repository": "acme-vol2a",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 2A",
       "requirements": "requirements/courses/vol2a.in"
     },
     "vol2b": {
       "kind": "course",
       "repository": "acme-vol2b",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 2B",
       "requirements": "requirements/courses/vol2b.in"
     },
     "vol3a": {
       "kind": "course",
       "repository": "acme-vol3a",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 3A",
       "requirements": "requirements/courses/vol3a.in"
     },
     "vol3b": {
       "kind": "course",
       "repository": "acme-vol3b",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 3B",
       "requirements": "requirements/courses/vol3b.in"
     },
     "vol4a": {
       "kind": "course",
       "repository": "acme-vol4a",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 4A",
       "requirements": "requirements/courses/vol4a.in"
     },
     "vol4b": {
       "kind": "course",
       "repository": "acme-vol4b",
-      "version": "2026.08.1",
+      "version": "2026.08.2",
       "display_name": "ACME Volume 4B",
       "requirements": "requirements/courses/vol4b.in"
     },
     "dev": {
       "kind": "dev",
       "repository": "acme-dev",
-      "version": "2026.08.2",
+      "version": "2026.08.3",
       "display_name": "ACME Lab Development"
     }
   }
