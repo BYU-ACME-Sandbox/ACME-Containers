@@ -176,12 +176,12 @@ jobs:
 
           To publish this update from a local ACME-Containers checkout:
 
-            git -C generated/manual-environments pull --ff-only
-            git -C generated/manual-environments apply --check /path/to/manual-locks-update.patch
-            git -C generated/manual-environments apply /path/to/manual-locks-update.patch
-            git -C generated/manual-environments add -A
-            git -C generated/manual-environments commit -m "Update ACME manual environment locks"
-            git -C generated/manual-environments push origin main
+            git -C uv-locks pull --ff-only
+            git -C uv-locks apply --check /path/to/manual-locks-update.patch
+            git -C uv-locks apply /path/to/manual-locks-update.patch
+            git -C uv-locks add -A
+            git -C uv-locks commit -m "Update ACME manual environment locks"
+            git -C uv-locks push origin main
 
           The nested repository uses your normal local Git/GitHub authentication.
           No cross-repository token is stored in ACME-Containers.
